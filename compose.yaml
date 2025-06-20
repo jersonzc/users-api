@@ -1,0 +1,10 @@
+services:
+  app:
+    environment:
+      - API_PORT=${API_PORT}
+      - PREFIX=${PREFIX}
+      - SERVER_READ_TIMEOUT=${SERVER_READ_TIMEOUT}
+      - SERVER_WRITE_TIMEOUT=${SERVER_WRITE_TIMEOUT}
+    build: .
+    ports:
+      - "${API_PORT}:${API_PORT}"
