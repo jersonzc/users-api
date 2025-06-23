@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"users/infrastructure/postgres"
 	"users/infrastructure/server"
 )
 
@@ -33,6 +34,13 @@ func main() {
 	config, err := NewConfig()
 	if err != nil {
 		log.Printf("Configuration error: %s", err.Error())
+		return
+	}
+
+	// Postgres client.
+	_, err = postgres.NewClient(config.DB, tracer)
+	if err != nil {
+		log.Printf("Database error: %s", err.Error())
 		return
 	}
 

@@ -4,11 +4,13 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"users/infrastructure/postgres"
 	"users/infrastructure/server"
 )
 
 type Config struct {
 	Server *server.Config
+	DB     *postgres.Config
 }
 
 func NewConfig() (*Config, error) {
@@ -22,8 +24,20 @@ func NewConfig() (*Config, error) {
 		return nil, err
 	}
 
+	dbConfig, err := postgres.NewConfig(
+		get("DB_HOST", "localhost"),
+		get("DB_PORT", "5432"),
+		get("DB_NAME", "users"),
+		get("DB_USER", "postgres"),
+		get("DB_PASSWORD", "postgres"),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Config{
 		Server: serverConfig,
+		DB:     dbConfig,
 	}, nil
 }
 
