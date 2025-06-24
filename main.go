@@ -38,9 +38,16 @@ func main() {
 	}
 
 	// Postgres client.
-	_, err = postgres.NewClient(config.DB, tracer)
+	postgresClient, err := postgres.NewClient(config.DB, tracer)
 	if err != nil {
 		log.Printf("Database error: %s", err.Error())
+		return
+	}
+
+	// Run migrations
+	err = postgresClient.Migrate()
+	if err != nil {
+		log.Printf("Database migration error: %s", err.Error())
 		return
 	}
 

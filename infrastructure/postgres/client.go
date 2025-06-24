@@ -2,9 +2,16 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.opentelemetry.io/otel/trace"
+	"log"
 )
 
 type Client struct {
@@ -38,4 +45,39 @@ func NewClient(config *Config, tracer trace.Tracer) (*Client, error) {
 		uri:      uri,
 		tracer:   tracer,
 	}, nil
+}
+
+func (c *Client) Migrate() error {
+	db, err := sql.Open("pgx", c.uri)
+	if err != nil {
+		return fmt.Errorf("failed to connect to db: %w", err)
+	}
+	defer func() {
+		if err = db.Close(); err != nil {
+			log.Printf("failed to close db connection: %v", err)
+		}
+	}()
+
+	err = db.Ping()
+	if err != nil {
+		return fmt.Errorf("failed to ping db: %w", err)
+	}
+
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	if err != nil {
+		return err
+	}
+
+	migration, err := migrate.NewWithDatabaseInstance("file://migrations/", c.dbName, driver)
+	if err != nil {
+		return err
+	}
+
+	if err = migration.Up(); err != nil {
+		if !errors.Is(err, migrate.ErrNoChange) {
+			return err
+		}
+	}
+
+	return nil
 }
