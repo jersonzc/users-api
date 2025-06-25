@@ -8,8 +8,10 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"log"
 )
@@ -80,4 +82,73 @@ func (c *Client) Migrate() error {
 	}
 
 	return nil
+}
+
+func (c *Client) Modify(ctx context.Context, query string) error {
+	tracerCtx, span := c.tracer.Start(ctx, "PostgresClient-Modify")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("client.postgres.query", query))
+
+	_, err := c.postgres.Exec(tracerCtx, query)
+	if err != nil {
+		return fmt.Errorf("unable to modify table: %w", err)
+	}
+
+	return nil
+}
+
+func (c *Client) Retrieve(ctx context.Context, query string) ([]map[string]string, error) {
+	tracerCtx, span := c.tracer.Start(ctx, "PostgresClient-Retrieve")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("client.postgres.query", query))
+
+	result, err := c.postgres.Query(tracerCtx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute query: %w", err)
+	}
+
+	defer result.Close()
+
+	var response []map[string]string
+
+	columns := result.FieldDescriptions()
+	for result.Next() {
+		if result.Err() != nil {
+			return nil, fmt.Errorf("postgres: unexpected row scan: %w", result.Err())
+		}
+
+		row := make(map[string]string, len(columns))
+		values, valuesErr := result.Values()
+		if valuesErr != nil {
+			return nil, fmt.Errorf("postgres: failed to read row: %w", valuesErr)
+		}
+
+		for i, v := range values {
+			var value string
+
+			if v != nil {
+				switch v.(type) {
+				case pgtype.Bool:
+					boolVal, _ := v.(pgtype.Bool).BoolValue()
+					value = fmt.Sprintf("%v", boolVal)
+				case pgtype.Numeric:
+					intVal, _ := v.(pgtype.Numeric).Int64Value()
+					value = fmt.Sprintf("%d", intVal.Int64)
+				case pgtype.Time:
+					timeVal, _ := v.(pgtype.Time).TimeValue()
+					value = fmt.Sprintf("%v", timeVal)
+				default:
+					value = fmt.Sprintf("%v", v)
+				}
+
+				row[columns[i].Name] = value
+			}
+		}
+
+		response = append(response, row)
+	}
+
+	return response, nil
 }
