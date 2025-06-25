@@ -76,3 +76,12 @@ func (repo *Repository) Update(ctx context.Context, user *entities.User) error {
 
 	return repo.execModify(tracerCtx, query)
 }
+
+func (repo *Repository) Remove(ctx context.Context, id int) error {
+	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-Remove")
+	defer span.End()
+
+	query, _, _ := goqu.Delete("users").Where(goqu.C("id").Eq(id)).ToSQL()
+
+	return repo.execModify(tracerCtx, query)
+}
