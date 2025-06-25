@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"users/infrastructure/dependencies"
 	"users/infrastructure/postgres"
 	"users/infrastructure/server"
 )
@@ -51,8 +52,14 @@ func main() {
 		return
 	}
 
+	// Link actions
+	actions, err := dependencies.NewActions(postgresClient, tracer)
+	if err != nil {
+		log.Fatalf("Actions error: %s", err.Error())
+	}
+
 	// Start HTTP server.
-	app := server.Setup(config.Server, &tracer)
+	app := server.Setup(config.Server, actions, &tracer)
 	appErr := make(chan error, 1)
 	go func() {
 		appErr <- app.ListenAndServe()

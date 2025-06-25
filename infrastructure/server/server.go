@@ -6,10 +6,11 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/otel/trace"
 	"net/http"
+	"users/infrastructure/dependencies"
 	"users/infrastructure/server/handlers"
 )
 
-func Setup(config *Config, tracer *trace.Tracer) *http.Server {
+func Setup(config *Config, actions *dependencies.Actions, tracer *trace.Tracer) *http.Server {
 	ginServer := gin.New()
 
 	ginServer.Use(otelgin.Middleware("app-server-gin"))
