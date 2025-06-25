@@ -16,6 +16,7 @@ FROM gcr.io/distroless/base-debian12 AS runner
 WORKDIR /
 
 COPY --from=builder /app /app
+COPY --from=builder /go/src/migrations /migrations
 
 USER nonroot:nonroot
 
