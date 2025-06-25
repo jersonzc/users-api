@@ -8,15 +8,17 @@ import (
 	"net/http"
 	"users/infrastructure/dependencies"
 	"users/infrastructure/server/handlers"
+	"users/infrastructure/server/routes"
 )
 
-func Setup(config *Config, actions *dependencies.Actions, tracer *trace.Tracer) *http.Server {
+func Setup(config *Config, actions *dependencies.Actions, tracer trace.Tracer) *http.Server {
 	ginServer := gin.New()
-
 	ginServer.Use(otelgin.Middleware("app-server-gin"))
 
 	router := ginServer.RouterGroup.Group(config.Prefix)
 	router.Any("/health", handlers.HealthCheck)
+
+	routes.Setup(router, actions, tracer)
 
 	return &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.Port),

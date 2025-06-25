@@ -59,7 +59,7 @@ func main() {
 	}
 
 	// Start HTTP server.
-	app := server.Setup(config.Server, actions, &tracer)
+	app := server.Setup(config.Server, actions, tracer)
 	appErr := make(chan error, 1)
 	go func() {
 		appErr <- app.ListenAndServe()
