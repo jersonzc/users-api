@@ -174,9 +174,9 @@ func (h *Handlers) Save(ctx *gin.Context) {
 	}
 
 	resultChan := make(chan result, 1)
-	go func(u *entities.User) {
+	go func(user *entities.User) {
 		var r result
-		r.user, r.err = h.actions.Save(tracerCtx, u)
+		r.user, r.err = h.actions.Save(tracerCtx, user)
 		resultChan <- r
 	}(user)
 
