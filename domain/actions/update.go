@@ -4,7 +4,6 @@ import (
 	"context"
 	"go.opentelemetry.io/otel/trace"
 	"users/domain"
-	"users/domain/entities"
 	"users/domain/errors"
 )
 
@@ -18,22 +17,22 @@ func NewUpdate(getByID domain.GetByID, update domain.Update, tracer trace.Tracer
 	return &Update{getByID: getByID, update: update, tracer: tracer}, nil
 }
 
-func (action *Update) Execute(ctx context.Context, user *entities.User) (*entities.User, error) {
+func (action *Update) Execute(ctx context.Context, id string, fields *map[string]interface{}) error {
 	tracerCtx, span := action.tracer.Start(ctx, "Action-Update")
 	defer span.End()
 
-	result, err := action.getByID(tracerCtx, []string{user.ID})
+	result, err := action.getByID(tracerCtx, []string{id})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if len(result) == 0 {
-		return nil, errors.AppUserNotFound
+		return errors.AppUserNotFound
 	}
 
-	if err = action.update(tracerCtx, user); err != nil {
-		return nil, err
+	if err = action.update(tracerCtx, id, fields); err != nil {
+		return err
 	}
 
-	return user, nil
+	return nil
 }

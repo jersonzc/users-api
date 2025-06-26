@@ -68,11 +68,11 @@ func (repo *Repository) Save(ctx context.Context, user *entities.User) error {
 	return repo.execModify(tracerCtx, query)
 }
 
-func (repo *Repository) Update(ctx context.Context, user *entities.User) error {
+func (repo *Repository) Update(ctx context.Context, id string, fields *map[string]interface{}) error {
 	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-Update")
 	defer span.End()
 
-	query, _, _ := goqu.Update("users").Set(user).Where(goqu.C("id").Eq(user.ID)).ToSQL()
+	query, _, _ := goqu.Update("users").Set(fields).Where(goqu.C("id").Eq(id)).ToSQL()
 
 	return repo.execModify(tracerCtx, query)
 }
