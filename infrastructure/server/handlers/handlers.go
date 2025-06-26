@@ -193,7 +193,7 @@ func (h *Handlers) Save(ctx *gin.Context) {
 	span.SetAttributes(attribute.String("http.headers", headers))
 	span.SetAttributes(attribute.String("http.body", string(data)))
 
-	ctx.JSON(http.StatusOK, responses.FromUser(r.user))
+	ctx.JSON(http.StatusCreated, gin.H{"data": responses.FromUser(r.user)})
 }
 
 // Update godoc
