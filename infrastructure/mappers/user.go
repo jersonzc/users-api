@@ -19,12 +19,12 @@ func ToUserList(rows []map[string]string) []*entities.User {
 func ToUser(row map[string]string) *entities.User {
 	var user entities.User
 
-	id, err := strconv.Atoi(row["id"])
+	createdAt, err := time.Parse(dateLayout, row["createdAt"])
 	if err != nil {
 		return &user
 	}
 
-	birth, err := time.Parse(dateLayout, row["birth"])
+	updatedAt, err := time.Parse(dateLayout, row["updatedAt"])
 	if err != nil {
 		return &user
 	}
@@ -34,19 +34,34 @@ func ToUser(row map[string]string) *entities.User {
 		return &user
 	}
 
-	user.ID = id
+	user.ID = row["id"]
 	user.Name = row["name"]
-	user.Birth = birth
+	user.Birth = timeFromNullableColumn(row, "birth")
+	user.Email = stringFromNullableColumn(row, "email")
+	user.Location = stringFromNullableColumn(row, "location")
+	user.CreatedAt = createdAt
+	user.UpdatedAt = updatedAt
 	user.Active = active
-	user.Location = StringFromNullableColumn(row, "location")
 
 	return &user
 }
 
-func StringFromNullableColumn(row map[string]string, column string) *string {
+func stringFromNullableColumn(row map[string]string, column string) *string {
 	result, ok := row[column]
 	if !ok {
 		return nil
 	}
 	return &result
+}
+
+func timeFromNullableColumn(rows map[string]string, column string) *time.Time {
+	result, ok := rows[column]
+	if !ok {
+		return nil
+	}
+	myTime, err := time.Parse(dateLayout, result)
+	if err != nil {
+		return nil
+	}
+	return &myTime
 }

@@ -39,7 +39,7 @@ func (repo *Repository) Get(ctx context.Context) ([]*entities.User, error) {
 	return mappers.ToUserList(rows), nil
 }
 
-func (repo *Repository) GetByID(ctx context.Context, ids []int) ([]*entities.User, error) {
+func (repo *Repository) GetByID(ctx context.Context, ids []string) ([]*entities.User, error) {
 	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-GetByID")
 	defer span.End()
 
@@ -77,7 +77,7 @@ func (repo *Repository) Update(ctx context.Context, user *entities.User) error {
 	return repo.execModify(tracerCtx, query)
 }
 
-func (repo *Repository) Remove(ctx context.Context, id int) error {
+func (repo *Repository) Remove(ctx context.Context, id string) error {
 	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-Remove")
 	defer span.End()
 

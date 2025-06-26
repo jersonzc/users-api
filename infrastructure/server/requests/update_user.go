@@ -10,8 +10,9 @@ import (
 type UpdateUser struct {
 	Name     string `json:"name"`
 	Birth    string `json:"birth"`
-	Active   string `json:"active"`
+	Email    string `json:"email"`
 	Location string `json:"location"`
+	Active   string `json:"active"`
 }
 
 func (p *UpdateUser) ToUser() (*entities.User, error) {
@@ -27,7 +28,7 @@ func (p *UpdateUser) ToUser() (*entities.User, error) {
 
 	return &entities.User{
 		Name:     p.Name,
-		Birth:    birth,
+		Birth:    toNullableTime(birth),
 		Active:   active,
 		Location: toNullableString(p.Location),
 	}, nil

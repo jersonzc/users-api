@@ -22,7 +22,7 @@ func (action *Save) Execute(ctx context.Context, user *entities.User) (*entities
 	tracerCtx, span := action.tracer.Start(ctx, "Action-Save")
 	defer span.End()
 
-	result, err := action.getByID(tracerCtx, []int{user.ID})
+	result, err := action.getByID(tracerCtx, []string{user.ID})
 	if err != nil {
 		return nil, err
 	}

@@ -22,7 +22,7 @@ func (action *Update) Execute(ctx context.Context, user *entities.User) (*entiti
 	tracerCtx, span := action.tracer.Start(ctx, "Action-Update")
 	defer span.End()
 
-	result, err := action.getByID(tracerCtx, []int{user.ID})
+	result, err := action.getByID(tracerCtx, []string{user.ID})
 	if err != nil {
 		return nil, err
 	}
