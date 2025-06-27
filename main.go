@@ -6,11 +6,15 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"users/docs"
 	"users/infrastructure/dependencies"
 	"users/infrastructure/postgres"
 	"users/infrastructure/server"
 )
 
+// @title           Users API
+// @version         1.0
+// @description     Interact with user accounts.
 func main() {
 	log.Println("Starting service")
 
@@ -36,6 +40,9 @@ func main() {
 		log.Printf("Configuration error: %s", err.Error())
 		return
 	}
+
+	// Swagger
+	docs.SwaggerInfo.BasePath = config.Server.Prefix
 
 	// Postgres client.
 	postgresClient, err := postgres.NewClient(config.DB)

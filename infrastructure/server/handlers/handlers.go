@@ -62,7 +62,7 @@ func (h *Handlers) Get(ctx *gin.Context) {
 // @Summary     List a single user
 // @Id          GetSingle
 // @Produce     json
-// @Param       id path int true "User ID"
+// @Param       id path string true "User ID"
 // @Success     200 {object} responses.UserResponse
 // @Failure     400 {object} error "error"
 // @Failure     500 {object} error "error"
@@ -95,7 +95,7 @@ func (h *Handlers) GetSingle(ctx *gin.Context) {
 // @Id          GetMultiple
 // @Accept      json
 // @Produce     json
-// @Param       request body requests.MultipleIDRequest true "list might be empty"
+// @Param       request body requests.MultipleIDRequest true "Enter the IDs of the users to list."
 // @Success     200 {array} responses.UserResponse
 // @Failure     400 {object} error "error"
 // @Failure     500 {object} error "error"
@@ -134,7 +134,7 @@ func (h *Handlers) GetMultiple(ctx *gin.Context) {
 // @Id          Save
 // @Accept      json
 // @Produce     json
-// @Param       request body requests.SaveUser true
+// @Param       payload body requests.SaveUser true "Create a user: 'name' field is required; all other fields are optional."
 // @Success     201 {object} responses.UserResponse
 // @Failure     400 {object} error "error"
 // @Failure     500 {object} error "error"
@@ -204,9 +204,9 @@ func (h *Handlers) Save(ctx *gin.Context) {
 // @Id          Update
 // @Accept      json
 // @Produce     json
-// @Param       id path int true "User ID"
-// @Param       request body requests.UpdateUser true
-// @Success     204 {object} responses.UserResponse
+// @Param       id path string true "The ID of the user."
+// @Param       request body requests.UpdateUser true "The info to update."
+// @Success     204
 // @Failure     400 {object} error "error"
 // @Failure     500 {object} error "error"
 // @Router      /users/{id} [put]
@@ -269,8 +269,8 @@ func (h *Handlers) Update(ctx *gin.Context) {
 // @Id          Remove
 // @Accept      json
 // @Produce     json
-// @Param       id path int true "User ID"
-// @Success     204 {object} interface{} "empty response"
+// @Param       id path string true "User ID"
+// @Success     204
 // @Failure     400 {object} error "error"
 // @Failure     500 {object} error "error"
 // @Router      /users/{id} [delete]

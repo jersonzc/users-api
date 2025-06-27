@@ -1,2 +1,12 @@
+# IDE settings
 .idea/
+
+# Environment variables
 .env
+
+# Outputs
+docs/swagger.json
+docs/swagger.yaml
+
+#OS files
+.DS_Store

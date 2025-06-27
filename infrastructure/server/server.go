@@ -3,6 +3,8 @@ package server
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"net/http"
 	"users/infrastructure/dependencies"
@@ -15,7 +17,8 @@ func Setup(config *Config, actions *dependencies.Actions) *http.Server {
 	ginServer.Use(otelgin.Middleware("app-server-gin"))
 
 	router := ginServer.RouterGroup.Group(config.Prefix)
-	router.Any("/health", handlers.HealthCheck)
+	router.GET("/health", handlers.HealthCheck)
+	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	routes.Setup(router, actions)
 
