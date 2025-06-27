@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"go.opentelemetry.io/otel"
 	"log"
 	"os"
 	"os/signal"
@@ -28,9 +27,6 @@ func main() {
 		err = errors.Join(err, otelShutdown(context.Background()))
 	}()
 
-	// Create tracer
-	tracer := otel.Tracer("app-server")
-
 	// Config resources.
 	config, err := NewConfig()
 	if err != nil {
@@ -39,7 +35,7 @@ func main() {
 	}
 
 	// Postgres client.
-	postgresClient, err := postgres.NewClient(config.DB, tracer)
+	postgresClient, err := postgres.NewClient(config.DB)
 	if err != nil {
 		log.Printf("Database error: %s", err.Error())
 		return
@@ -53,13 +49,13 @@ func main() {
 	}
 
 	// Link actions
-	actions, err := dependencies.NewActions(postgresClient, tracer)
+	actions, err := dependencies.NewActions(postgresClient)
 	if err != nil {
 		log.Fatalf("Actions error: %s", err.Error())
 	}
 
 	// Start HTTP server.
-	app := server.Setup(config.Server, actions, tracer)
+	app := server.Setup(config.Server, actions)
 	appErr := make(chan error, 1)
 	go func() {
 		appErr <- app.ListenAndServe()

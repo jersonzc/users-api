@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/render"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -24,8 +24,11 @@ type Handlers struct {
 	tracer  trace.Tracer
 }
 
-func New(actions *dependencies.Actions, tracer trace.Tracer) *Handlers {
-	return &Handlers{actions: actions, tracer: tracer}
+func New(actions *dependencies.Actions) *Handlers {
+	return &Handlers{
+		actions: actions,
+		tracer:  otel.Tracer("Handler"),
+	}
 }
 
 // Get godoc
@@ -65,7 +68,7 @@ func (h *Handlers) Get(ctx *gin.Context) {
 // @Failure     500 {object} error "error"
 // @Router      /users/search/{id} [get]
 func (h *Handlers) GetSingle(ctx *gin.Context) {
-	tracerCtx, span := h.tracer.Start(ctx.Request.Context(), "GetSingle")
+	tracerCtx, span := h.tracer.Start(ctx.Request.Context(), "Handler-GetSingle")
 	defer span.End()
 
 	headers := mapToString(ctx.Request.Header)
@@ -98,7 +101,7 @@ func (h *Handlers) GetSingle(ctx *gin.Context) {
 // @Failure     500 {object} error "error"
 // @Router      /users/search [post]
 func (h *Handlers) GetMultiple(ctx *gin.Context) {
-	tracerCtx, span := h.tracer.Start(ctx.Request.Context(), "GetMultiple")
+	tracerCtx, span := h.tracer.Start(ctx.Request.Context(), "Handler-GetMultiple")
 	defer span.End()
 
 	headers := mapToString(ctx.Request.Header)
@@ -272,7 +275,7 @@ func (h *Handlers) Update(ctx *gin.Context) {
 // @Failure     500 {object} error "error"
 // @Router      /users/{id} [delete]
 func (h *Handlers) Remove(ctx *gin.Context) {
-	tracerCtx, span := h.tracer.Start(ctx.Request.Context(), "Remove")
+	tracerCtx, span := h.tracer.Start(ctx.Request.Context(), "Handler-Remove")
 	defer span.End()
 
 	headers := mapToString(ctx.Request.Header)
@@ -295,7 +298,7 @@ func (h *Handlers) Remove(ctx *gin.Context) {
 	span.SetAttributes(attribute.String("http.headers", headers))
 	span.SetAttributes(attribute.String("http.path.id", id))
 
-	ctx.JSON(http.StatusOK, render.Data{})
+	ctx.JSON(http.StatusNoContent, gin.H{})
 }
 
 func mapToString(myMap map[string][]string) string {

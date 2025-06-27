@@ -2,7 +2,6 @@ package dependencies
 
 import (
 	"context"
-	"go.opentelemetry.io/otel/trace"
 	"users/domain/actions"
 	"users/domain/entities"
 	"users/infrastructure/postgres"
@@ -16,33 +15,33 @@ type Actions struct {
 	Remove  func(context.Context, string) error
 }
 
-func NewActions(postgresClient *postgres.Client, tracer trace.Tracer) (*Actions, error) {
-	postgresRepo, err := postgres.NewRepository(postgresClient.Modify, postgresClient.Retrieve, tracer)
+func NewActions(postgresClient *postgres.Client) (*Actions, error) {
+	postgresRepo, err := postgres.NewRepository(postgresClient.Modify, postgresClient.Retrieve)
 	if err != nil {
 		return nil, err
 	}
 
-	get, err := actions.NewGet(postgresRepo.Get, tracer)
+	get, err := actions.NewGet(postgresRepo.Get)
 	if err != nil {
 		return nil, err
 	}
 
-	getByID, err := actions.NewGetByID(postgresRepo.GetByID, tracer)
+	getByID, err := actions.NewGetByID(postgresRepo.GetByID)
 	if err != nil {
 		return nil, err
 	}
 
-	save, err := actions.NewSave(postgresRepo.GetByID, postgresRepo.Save, tracer)
+	save, err := actions.NewSave(postgresRepo.GetByID, postgresRepo.Save)
 	if err != nil {
 		return nil, err
 	}
 
-	update, err := actions.NewUpdate(postgresRepo.GetByID, postgresRepo.Update, tracer)
+	update, err := actions.NewUpdate(postgresRepo.GetByID, postgresRepo.Update)
 	if err != nil {
 		return nil, err
 	}
 
-	remove, err := actions.NewRemove(postgresRepo.GetByID, postgresRepo.Remove, tracer)
+	remove, err := actions.NewRemove(postgresRepo.GetByID, postgresRepo.Remove)
 	if err != nil {
 		return nil, err
 	}
