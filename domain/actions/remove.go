@@ -17,11 +17,11 @@ func NewRemove(getByID domain.GetByID, remove domain.Remove, tracer trace.Tracer
 	return &Remove{getByID: getByID, remove: remove, tracer: tracer}, nil
 }
 
-func (action *Remove) Execute(ctx context.Context, id int) error {
+func (action *Remove) Execute(ctx context.Context, id string) error {
 	tracerCtx, span := action.tracer.Start(ctx, "Action-Remove")
 	defer span.End()
 
-	result, err := action.getByID(tracerCtx, []int{id})
+	result, err := action.getByID(tracerCtx, []string{id})
 	if err != nil {
 		return err
 	}

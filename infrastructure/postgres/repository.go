@@ -27,7 +27,7 @@ func (repo *Repository) Get(ctx context.Context) ([]*entities.User, error) {
 	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-Get")
 	defer span.End()
 
-	query, _, _ := goqu.From("users").ToSQL()
+	query, _, _ := goqu.From("users").Where(goqu.Ex{"active": true}).ToSQL()
 
 	rows, err := repo.execRetrieve(tracerCtx, query)
 	if err != nil {
@@ -39,7 +39,7 @@ func (repo *Repository) Get(ctx context.Context) ([]*entities.User, error) {
 	return mappers.ToUserList(rows), nil
 }
 
-func (repo *Repository) GetByID(ctx context.Context, ids []int) ([]*entities.User, error) {
+func (repo *Repository) GetByID(ctx context.Context, ids []string) ([]*entities.User, error) {
 	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-GetByID")
 	defer span.End()
 
@@ -60,24 +60,24 @@ func (repo *Repository) Save(ctx context.Context, user *entities.User) error {
 	defer span.End()
 
 	query, _, _ := goqu.Insert("users").
-		Cols("id", "name", "birth", "active", "location").
+		Cols("id", "name", "birth", "email", "location", "created_at", "updated_at", "active").
 		Vals(
-			goqu.Vals{user.ID, user.Name, user.Birth, user.Active, user.Location},
+			goqu.Vals{user.ID, user.Name, user.Birth, user.Email, user.Location, user.CreatedAt, user.UpdatedAt, user.Active},
 		).ToSQL()
 
 	return repo.execModify(tracerCtx, query)
 }
 
-func (repo *Repository) Update(ctx context.Context, user *entities.User) error {
+func (repo *Repository) Update(ctx context.Context, id string, fields *map[string]interface{}) error {
 	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-Update")
 	defer span.End()
 
-	query, _, _ := goqu.Update("users").Set(user).Where(goqu.C("id").Eq(user.ID)).ToSQL()
+	query, _, _ := goqu.Update("users").Set(fields).Where(goqu.C("id").Eq(id)).ToSQL()
 
 	return repo.execModify(tracerCtx, query)
 }
 
-func (repo *Repository) Remove(ctx context.Context, id int) error {
+func (repo *Repository) Remove(ctx context.Context, id string) error {
 	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-Remove")
 	defer span.End()
 

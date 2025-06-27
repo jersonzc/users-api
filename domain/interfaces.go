@@ -7,10 +7,10 @@ import (
 
 type Get func(context.Context) ([]*entities.User, error)
 
-type GetByID func(context.Context, []int) ([]*entities.User, error)
+type GetByID func(context.Context, []string) ([]*entities.User, error)
 
 type Save func(context.Context, *entities.User) error
 
-type Update func(context.Context, *entities.User) error
+type Update func(context.Context, string, *map[string]interface{}) error
 
-type Remove func(context.Context, int) error
+type Remove func(context.Context, string) error

@@ -10,10 +10,10 @@ import (
 
 type Actions struct {
 	Get     func(context.Context) ([]*entities.User, error)
-	GetByID func(context.Context, []int) ([]*entities.User, error)
+	GetByID func(context.Context, []string) ([]*entities.User, error)
 	Save    func(context.Context, *entities.User) (*entities.User, error)
-	Update  func(context.Context, *entities.User) (*entities.User, error)
-	Remove  func(context.Context, int) error
+	Update  func(context.Context, string, *map[string]interface{}) error
+	Remove  func(context.Context, string) error
 }
 
 func NewActions(postgresClient *postgres.Client, tracer trace.Tracer) (*Actions, error) {

@@ -1,8 +1,11 @@
 CREATE TABLE users
 (
-    id       INTEGER UNIQUE NOT NULL,
-    name     VARCHAR(200)   NOT NULL,
-    birth    DATE           NOT NULL,
-    active   BOOLEAN        NOT NULL,
-    location VARCHAR(200)
+    id         CHARACTER(36) PRIMARY KEY,
+    name       TEXT      NOT NULL,
+    birth      DATE,
+    email      TEXT UNIQUE,
+    location   TEXT,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    active     BOOLEAN   NOT NULL
 );

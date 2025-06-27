@@ -10,7 +10,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 	"users/domain/entities"
 	"users/infrastructure/dependencies"
@@ -37,7 +36,7 @@ func New(actions *dependencies.Actions, tracer trace.Tracer) *Handlers {
 // @Failure     500
 // @Router      /users [get]
 func (h *Handlers) Get(ctx *gin.Context) {
-	tracerCtx, span := h.tracer.Start(ctx.Request.Context(), "Get")
+	tracerCtx, span := h.tracer.Start(ctx.Request.Context(), "Handler-Get")
 	defer span.End()
 
 	headers := mapToString(ctx.Request.Header)
@@ -71,15 +70,9 @@ func (h *Handlers) GetSingle(ctx *gin.Context) {
 
 	headers := mapToString(ctx.Request.Header)
 
-	id, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
-		ctx.JSON(http.StatusBadRequest, gin.H{"errors": err.Error()})
-		return
-	}
+	id := ctx.Param("id")
 
-	result, err := h.actions.GetByID(tracerCtx, []int{id})
+	result, err := h.actions.GetByID(tracerCtx, []string{id})
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
@@ -89,7 +82,7 @@ func (h *Handlers) GetSingle(ctx *gin.Context) {
 
 	span.SetAttributes(attribute.String(xAppID, ctx.Request.Header.Get(xAppID)))
 	span.SetAttributes(attribute.String("http.headers", headers))
-	span.SetAttributes(attribute.Int("http.path.id", id))
+	span.SetAttributes(attribute.String("http.path.id", id))
 
 	ctx.JSON(http.StatusOK, gin.H{"data": responses.FromUserList(result)})
 }
@@ -128,7 +121,7 @@ func (h *Handlers) GetMultiple(ctx *gin.Context) {
 
 	span.SetAttributes(attribute.String(xAppID, ctx.Request.Header.Get(xAppID)))
 	span.SetAttributes(attribute.String("http.headers", headers))
-	span.SetAttributes(attribute.IntSlice("http.body.users", body.Users))
+	span.SetAttributes(attribute.StringSlice("http.body.users", body.Users))
 
 	ctx.JSON(http.StatusOK, gin.H{"data": responses.FromUserList(result)})
 }
@@ -144,7 +137,7 @@ func (h *Handlers) GetMultiple(ctx *gin.Context) {
 // @Failure     500 {object} error "error"
 // @Router      /users [post]
 func (h *Handlers) Save(ctx *gin.Context) {
-	tracerCtx, span := h.tracer.Start(ctx.Request.Context(), "Save")
+	tracerCtx, span := h.tracer.Start(ctx.Request.Context(), "Handler-Save")
 	defer span.End()
 
 	headers := mapToString(ctx.Request.Header)
@@ -181,9 +174,9 @@ func (h *Handlers) Save(ctx *gin.Context) {
 	}
 
 	resultChan := make(chan result, 1)
-	go func(u *entities.User) {
+	go func(user *entities.User) {
 		var r result
-		r.user, r.err = h.actions.Save(tracerCtx, u)
+		r.user, r.err = h.actions.Save(tracerCtx, user)
 		resultChan <- r
 	}(user)
 
@@ -200,7 +193,7 @@ func (h *Handlers) Save(ctx *gin.Context) {
 	span.SetAttributes(attribute.String("http.headers", headers))
 	span.SetAttributes(attribute.String("http.body", string(data)))
 
-	ctx.JSON(http.StatusOK, responses.FromUser(r.user))
+	ctx.JSON(http.StatusCreated, gin.H{"data": responses.FromUser(r.user)})
 }
 
 // Update godoc
@@ -215,7 +208,7 @@ func (h *Handlers) Save(ctx *gin.Context) {
 // @Failure     500 {object} error "error"
 // @Router      /users/{id} [put]
 func (h *Handlers) Update(ctx *gin.Context) {
-	tracerCtx, span := h.tracer.Start(ctx.Request.Context(), "Update")
+	tracerCtx, span := h.tracer.Start(ctx.Request.Context(), "Handler-Update")
 	defer span.End()
 
 	headers := mapToString(ctx.Request.Header)
@@ -228,25 +221,19 @@ func (h *Handlers) Update(ctx *gin.Context) {
 		return
 	}
 
-	id, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
-		ctx.JSON(http.StatusBadRequest, gin.H{"errors": err.Error()})
-		return
-	}
-
 	ctx.Request.Body = io.NopCloser(bytes.NewReader(data))
 
 	var body requests.UpdateUser
-	if err := ctx.ShouldBindJSON(&body); err != nil {
+	if err = ctx.ShouldBindJSON(&body); err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		ctx.JSON(http.StatusBadRequest, gin.H{"errors": err.Error()})
 		return
 	}
 
-	user, err := body.ToUser()
+	id := ctx.Param("id")
+
+	fields, err := body.ToMap()
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
@@ -254,34 +241,24 @@ func (h *Handlers) Update(ctx *gin.Context) {
 		return
 	}
 
-	user.ID = id
+	errChan := make(chan error, 1)
+	go func(id string, fields *map[string]interface{}) {
+		errChan <- h.actions.Update(tracerCtx, id, fields)
+	}(id, fields)
 
-	type result struct {
-		user *entities.User
-		err  error
-	}
-
-	resultChan := make(chan result, 1)
-	go func(u *entities.User) {
-		var r result
-		r.user, r.err = h.actions.Update(tracerCtx, u)
-		resultChan <- r
-	}(user)
-
-	r := <-resultChan
-	if r.err != nil {
-		span.RecordError(r.err)
-		span.SetStatus(codes.Error, r.err.Error())
-		ctx.JSON(http.StatusInternalServerError, gin.H{"errors": r.err.Error()})
+	if err = <-errChan; err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		ctx.JSON(http.StatusInternalServerError, gin.H{"errors": err.Error()})
 		return
 	}
 
 	span.SetAttributes(attribute.String(xAppID, ctx.Request.Header.Get(xAppID)))
 	span.SetAttributes(attribute.String("http.headers", headers))
 	span.SetAttributes(attribute.String("http.body", string(data)))
-	span.SetAttributes(attribute.Int("http.path.id", id))
+	span.SetAttributes(attribute.String("http.path.id", id))
 
-	ctx.JSON(http.StatusOK, responses.FromUser(r.user))
+	ctx.JSON(http.StatusNoContent, gin.H{})
 }
 
 // Remove godoc
@@ -300,20 +277,14 @@ func (h *Handlers) Remove(ctx *gin.Context) {
 
 	headers := mapToString(ctx.Request.Header)
 
-	id, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
-		ctx.JSON(http.StatusBadRequest, gin.H{"errors": err.Error()})
-		return
-	}
+	id := ctx.Param("id")
 
-	myErr := make(chan error, 1)
-	go func(id int) {
-		myErr <- h.actions.Remove(tracerCtx, id)
+	chErr := make(chan error, 1)
+	go func(id string) {
+		chErr <- h.actions.Remove(tracerCtx, id)
 	}(id)
 
-	if err = <-myErr; err != nil {
+	if err := <-chErr; err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"errors": err.Error()})
@@ -322,7 +293,7 @@ func (h *Handlers) Remove(ctx *gin.Context) {
 
 	span.SetAttributes(attribute.String(xAppID, ctx.Request.Header.Get(xAppID)))
 	span.SetAttributes(attribute.String("http.headers", headers))
-	span.SetAttributes(attribute.Int("http.path.id", id))
+	span.SetAttributes(attribute.String("http.path.id", id))
 
 	ctx.JSON(http.StatusOK, render.Data{})
 }
