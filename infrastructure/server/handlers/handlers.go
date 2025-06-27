@@ -32,7 +32,7 @@ func New(actions *dependencies.Actions) *Handlers {
 }
 
 // Get godoc
-// @Summary     List users
+// @Summary     List active users
 // @Id          Get
 // @Produce     json
 // @Success     200 {array} responses.UserResponse
@@ -135,7 +135,7 @@ func (h *Handlers) GetMultiple(ctx *gin.Context) {
 // @Accept      json
 // @Produce     json
 // @Param       request body requests.SaveUser true
-// @Success     200 {object} responses.UserResponse
+// @Success     201 {object} responses.UserResponse
 // @Failure     400 {object} error "error"
 // @Failure     500 {object} error "error"
 // @Router      /users [post]
@@ -206,7 +206,7 @@ func (h *Handlers) Save(ctx *gin.Context) {
 // @Produce     json
 // @Param       id path int true "User ID"
 // @Param       request body requests.UpdateUser true
-// @Success     200 {object} responses.UserResponse
+// @Success     204 {object} responses.UserResponse
 // @Failure     400 {object} error "error"
 // @Failure     500 {object} error "error"
 // @Router      /users/{id} [put]
@@ -270,7 +270,7 @@ func (h *Handlers) Update(ctx *gin.Context) {
 // @Accept      json
 // @Produce     json
 // @Param       id path int true "User ID"
-// @Success     200 {object} interface{} "empty response"
+// @Success     204 {object} interface{} "empty response"
 // @Failure     400 {object} error "error"
 // @Failure     500 {object} error "error"
 // @Router      /users/{id} [delete]
