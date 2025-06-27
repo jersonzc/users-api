@@ -130,11 +130,11 @@ func (c *Client) Retrieve(ctx context.Context, query string) ([]map[string]strin
 			var value string
 
 			if v != nil {
-				switch v.(type) {
+				switch t := v.(type) {
 				case time.Time:
-					value = fmt.Sprintf("%s", v.(time.Time).Format(time.DateTime))
+					value = t.Format(time.DateTime)
 				default:
-					value = fmt.Sprintf("%v", v)
+					value = fmt.Sprintf("%v", t)
 				}
 
 				row[columns[i].Name] = value
