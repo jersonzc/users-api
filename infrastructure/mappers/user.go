@@ -6,8 +6,6 @@ import (
 	"users/domain/entities"
 )
 
-const dateLayout = "2006-01-02 15:04:05 -0700 MST"
-
 func ToUserList(rows []map[string]string) []*entities.User {
 	users := make([]*entities.User, len(rows))
 	for i, row := range rows {
@@ -19,12 +17,12 @@ func ToUserList(rows []map[string]string) []*entities.User {
 func ToUser(row map[string]string) *entities.User {
 	var user entities.User
 
-	createdAt, err := time.Parse(dateLayout, row["createdAt"])
+	createdAt, err := time.Parse(time.DateTime, row["created_at"])
 	if err != nil {
 		return &user
 	}
 
-	updatedAt, err := time.Parse(dateLayout, row["updatedAt"])
+	updatedAt, err := time.Parse(time.DateTime, row["updated_at"])
 	if err != nil {
 		return &user
 	}
@@ -59,7 +57,7 @@ func timeFromNullableColumn(rows map[string]string, column string) *time.Time {
 	if !ok {
 		return nil
 	}
-	myTime, err := time.Parse(dateLayout, result)
+	myTime, err := time.Parse(time.DateTime, result)
 	if err != nil {
 		return nil
 	}

@@ -36,7 +36,7 @@ func New(actions *dependencies.Actions, tracer trace.Tracer) *Handlers {
 // @Failure     500
 // @Router      /users [get]
 func (h *Handlers) Get(ctx *gin.Context) {
-	tracerCtx, span := h.tracer.Start(ctx.Request.Context(), "Get")
+	tracerCtx, span := h.tracer.Start(ctx.Request.Context(), "Handler-Get")
 	defer span.End()
 
 	headers := mapToString(ctx.Request.Header)
