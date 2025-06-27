@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"strconv"
 	"time"
@@ -45,6 +46,7 @@ func get(key string, defaultValue string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
 	}
+	log.Printf("Using default value: %q for key: %q", defaultValue, key)
 	return defaultValue
 }
 
@@ -54,6 +56,7 @@ func getInt(key string, defaultValue int) int {
 			return valueToInt
 		}
 	}
+	log.Printf("Using default value: %q for key: %q", defaultValue, key)
 	return defaultValue
 }
 
@@ -63,5 +66,6 @@ func getDuration(key string, defaultValue time.Duration, unit time.Duration) tim
 			return time.Duration(valueToInt) * unit
 		}
 	}
+	log.Printf("Using default value: %q for key: %q", defaultValue, key)
 	return defaultValue * unit
 }

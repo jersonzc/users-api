@@ -1,6 +1,7 @@
 package mappers
 
 import (
+	"log"
 	"strconv"
 	"time"
 	"users/domain/entities"
@@ -19,16 +20,19 @@ func ToUser(row map[string]string) *entities.User {
 
 	createdAt, err := time.Parse(time.DateTime, row["created_at"])
 	if err != nil {
+		log.Printf("Error while parsing 'created_at' field: %s", err.Error())
 		return &user
 	}
 
 	updatedAt, err := time.Parse(time.DateTime, row["updated_at"])
 	if err != nil {
+		log.Printf("Error while parsing 'updated_at' field: %s", err.Error())
 		return &user
 	}
 
 	active, err := strconv.ParseBool(row["active"])
 	if err != nil {
+		log.Printf("Error while parsing 'active' field: %s", err.Error())
 		return &user
 	}
 

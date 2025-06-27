@@ -25,6 +25,7 @@ func main() {
 	}
 	defer func() {
 		err = errors.Join(err, otelShutdown(context.Background()))
+		log.Printf("Error while shutting down otel sdk: %s", err.Error())
 	}()
 
 	// Config resources.
@@ -51,7 +52,7 @@ func main() {
 	// Link actions
 	actions, err := dependencies.NewActions(postgresClient)
 	if err != nil {
-		log.Fatalf("Actions error: %s", err.Error())
+		log.Printf("Actions error: %s", err.Error())
 	}
 
 	// Start HTTP server.
