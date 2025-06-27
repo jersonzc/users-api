@@ -16,7 +16,7 @@ func Setup(config *Config, actions *dependencies.Actions) *http.Server {
 	ginServer := gin.New()
 	ginServer.Use(otelgin.Middleware("app-server-gin"))
 
-	router := ginServer.RouterGroup.Group(config.Prefix)
+	router := ginServer.Group(config.Prefix)
 	router.GET("/health", handlers.HealthCheck)
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
