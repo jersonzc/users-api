@@ -11,5 +11,5 @@ docker-compose up --build
 ```
 
 ## Docs
-The Swagger documentation is located at [http://localhost:3001/api/v1/docs/](http://localhost:3001/api/v1/docs/)
+The Swagger documentation is located at [http://localhost:3001/company/docs/index.html](http://localhost:3001/api/v1/docs/index.html)
 
