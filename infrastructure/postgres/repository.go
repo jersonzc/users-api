@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"github.com/doug-martin/goqu/v9"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"users/domain/entities"
@@ -18,9 +19,11 @@ type Repository struct {
 func NewRepository(
 	execModify func(context.Context, string) error,
 	execRetrieve func(context.Context, string) ([]map[string]string, error),
-	tracer trace.Tracer,
 ) (*Repository, error) {
-	return &Repository{execModify: execModify, execRetrieve: execRetrieve, tracer: tracer}, nil
+	return &Repository{
+		execModify:   execModify,
+		execRetrieve: execRetrieve,
+		tracer:       otel.Tracer("PostgresRepository")}, nil
 }
 
 func (repo *Repository) Get(ctx context.Context) ([]*entities.User, error) {

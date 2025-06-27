@@ -10,6 +10,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"log"
@@ -23,7 +24,7 @@ type Client struct {
 	tracer   trace.Tracer
 }
 
-func NewClient(config *Config, tracer trace.Tracer) (*Client, error) {
+func NewClient(config *Config) (*Client, error) {
 	uri := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", config.Username, config.Password, config.Host, config.Port, config.Database)
 
 	connConfig, err := pgxpool.ParseConfig(uri)
@@ -45,7 +46,7 @@ func NewClient(config *Config, tracer trace.Tracer) (*Client, error) {
 		postgres: connPool,
 		dbName:   config.Database,
 		uri:      uri,
-		tracer:   tracer,
+		tracer:   otel.Tracer("PostgresClient"),
 	}, nil
 }
 
