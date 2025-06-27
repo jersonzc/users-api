@@ -8,12 +8,12 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"log"
+	"time"
 )
 
 type Client struct {
@@ -130,15 +130,8 @@ func (c *Client) Retrieve(ctx context.Context, query string) ([]map[string]strin
 
 			if v != nil {
 				switch v.(type) {
-				case pgtype.Bool:
-					boolVal, _ := v.(pgtype.Bool).BoolValue()
-					value = fmt.Sprintf("%v", boolVal)
-				case pgtype.Numeric:
-					intVal, _ := v.(pgtype.Numeric).Int64Value()
-					value = fmt.Sprintf("%d", intVal.Int64)
-				case pgtype.Time:
-					timeVal, _ := v.(pgtype.Time).TimeValue()
-					value = fmt.Sprintf("%v", timeVal)
+				case time.Time:
+					value = fmt.Sprintf("%s", v.(time.Time).Format(time.DateTime))
 				default:
 					value = fmt.Sprintf("%v", v)
 				}
