@@ -84,5 +84,4 @@ func main() {
 
 	// When Shutdown is called, ListenAndServe immediately returns ErrServerClosed.
 	err = app.Shutdown(context.Background())
-	return
 }
