@@ -27,7 +27,7 @@ func (repo *Repository) Get(ctx context.Context) ([]*entities.User, error) {
 	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-Get")
 	defer span.End()
 
-	query, _, _ := goqu.From("users").ToSQL()
+	query, _, _ := goqu.From("users").Where(goqu.Ex{"active": true}).ToSQL()
 
 	rows, err := repo.execRetrieve(tracerCtx, query)
 	if err != nil {
