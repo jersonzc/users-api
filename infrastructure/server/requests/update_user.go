@@ -24,7 +24,7 @@ func (p *UpdateUser) ToMap() (*map[string]interface{}, error) {
 	if p.Birth != nil {
 		birth, err := time.Parse(dateLayout, *p.Birth)
 		if err != nil {
-			return nil, fmt.Errorf("error while parsing 'birth' field from %q: %w", p.Birth, err)
+			return nil, fmt.Errorf("error while parsing 'birth' field from %q: %w", *p.Birth, err)
 		}
 		fields["birth"] = birth
 	}
@@ -44,7 +44,7 @@ func (p *UpdateUser) ToMap() (*map[string]interface{}, error) {
 	if p.Active != nil {
 		active, err := strconv.ParseBool(*p.Active)
 		if err != nil {
-			return nil, fmt.Errorf("error while parsing 'active' field from %q: %w", p.Active, err)
+			return nil, fmt.Errorf("error while parsing 'active' field from %q: %w", *p.Active, err)
 		}
 		fields["active"] = active
 	}
