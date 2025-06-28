@@ -19,7 +19,7 @@ type SaveUser struct {
 func (p *SaveUser) ToUser() (*entities.User, error) {
 	uuidV4 := uuid.New()
 
-	birth, err := parseTime(dateLayout, p.Birth)
+	birth, err := time.Parse(dateLayout, p.Birth)
 	if err != nil {
 		return nil, fmt.Errorf("error while parsing 'birth' field from %q: %w", p.Birth, err)
 	}
@@ -36,19 +36,6 @@ func (p *SaveUser) ToUser() (*entities.User, error) {
 		UpdatedAt: now,
 		Active:    true,
 	}, nil
-}
-
-func parseTime(layout string, value string) (time.Time, error) {
-	if value == "" {
-		return time.Time{}, nil
-	}
-
-	result, err := time.Parse(layout, value)
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	return result, nil
 }
 
 func toNullableString(value string) *string {
