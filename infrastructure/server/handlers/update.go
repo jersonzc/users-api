@@ -1,0 +1,76 @@
+package handlers
+
+import (
+	"bytes"
+	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"io"
+	"net/http"
+	"users/infrastructure/server/requests"
+)
+
+// Update godoc
+// @Summary     Modify a user
+// @Id          Update
+// @Accept      json
+// @Produce     json
+// @Param       id path string true "The ID of the user."
+// @Param       request body requests.UpdateUser true "The info to update."
+// @Success     204
+// @Failure     400 {object} error "error"
+// @Failure     500 {object} error "error"
+// @Router      /users/{id} [put]
+func (h *Handlers) Update(ctx *gin.Context) {
+	tracerCtx, span := h.tracer.Start(ctx.Request.Context(), "Handler-Update")
+	defer span.End()
+
+	headers := mapToString(ctx.Request.Header)
+
+	data, err := ctx.GetRawData()
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"errors": err.Error()})
+		return
+	}
+
+	ctx.Request.Body = io.NopCloser(bytes.NewReader(data))
+
+	var body requests.UpdateUser
+	if err = ctx.ShouldBindJSON(&body); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"errors": err.Error()})
+		return
+	}
+
+	id := ctx.Param("id")
+
+	fields, err := body.ToMap()
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"errors": err.Error()})
+		return
+	}
+
+	errChan := make(chan error, 1)
+	go func(id string, fields *map[string]interface{}) {
+		errChan <- h.actions.Update(tracerCtx, id, fields)
+	}(id, fields)
+
+	if err = <-errChan; err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		ctx.JSON(http.StatusInternalServerError, gin.H{"errors": err.Error()})
+		return
+	}
+
+	span.SetAttributes(attribute.String(xAppID, ctx.Request.Header.Get(xAppID)))
+	span.SetAttributes(attribute.String("http.headers", headers))
+	span.SetAttributes(attribute.String("http.body", string(data)))
+	span.SetAttributes(attribute.String("http.path.id", id))
+
+	ctx.JSON(http.StatusNoContent, gin.H{})
+}
