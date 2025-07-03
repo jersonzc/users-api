@@ -16,7 +16,7 @@ type Actions struct {
 }
 
 func NewActions(postgresClient *postgres.Client) (*Actions, error) {
-	postgresRepo, err := postgres.NewRepository(postgresClient.Modify, postgresClient.Retrieve)
+	postgresRepo, err := postgres.NewRepository(postgresClient)
 	if err != nil {
 		return nil, err
 	}
