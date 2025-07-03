@@ -21,7 +21,7 @@ func NewUpdate(getByID domain.GetByID, update domain.Update) (*Update, error) {
 		tracer:  otel.Tracer("Action-Update")}, nil
 }
 
-func (action *Update) Execute(ctx context.Context, id string, fields *map[string]interface{}) error {
+func (action *Update) Execute(ctx context.Context, id string, fields map[string]interface{}) error {
 	tracerCtx, span := action.tracer.Start(ctx, "Action-Update-Execute")
 	defer span.End()
 

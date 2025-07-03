@@ -13,7 +13,7 @@ import (
 )
 
 type UpdateMock struct {
-	execute func(context.Context, string, *map[string]interface{}) error
+	execute func(context.Context, string, map[string]interface{}) error
 	err     error
 }
 
@@ -22,7 +22,7 @@ func NewUpdateMock(err error) *UpdateMock {
 		err: err,
 	}
 
-	mock.execute = func(ctx context.Context, id string, fields *map[string]interface{}) error {
+	mock.execute = func(ctx context.Context, id string, fields map[string]interface{}) error {
 		return err
 	}
 
