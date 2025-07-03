@@ -71,7 +71,7 @@ func (repo *Repository) Save(ctx context.Context, user *entities.User) error {
 	return repo.execModify(tracerCtx, query)
 }
 
-func (repo *Repository) Update(ctx context.Context, id string, fields *map[string]interface{}) error {
+func (repo *Repository) Update(ctx context.Context, id string, fields map[string]interface{}) error {
 	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-Update")
 	defer span.End()
 

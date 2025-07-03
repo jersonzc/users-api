@@ -56,7 +56,7 @@ func (h *Handlers) Update(ctx *gin.Context) {
 	}
 
 	errChan := make(chan error, 1)
-	go func(id string, fields *map[string]interface{}) {
+	go func(id string, fields map[string]interface{}) {
 		errChan <- h.actions.Update(tracerCtx, id, fields)
 	}(id, fields)
 

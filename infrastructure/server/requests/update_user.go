@@ -14,7 +14,7 @@ type UpdateUser struct {
 	Active   *string `json:"active"`
 }
 
-func (p *UpdateUser) ToMap() (*map[string]interface{}, error) {
+func (p *UpdateUser) ToMap() (map[string]interface{}, error) {
 	fields := make(map[string]interface{})
 
 	if p.Name != nil {
@@ -51,5 +51,5 @@ func (p *UpdateUser) ToMap() (*map[string]interface{}, error) {
 
 	fields["updated_at"] = time.Now().UTC()
 
-	return &fields, nil
+	return fields, nil
 }
