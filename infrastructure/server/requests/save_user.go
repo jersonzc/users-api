@@ -17,15 +17,13 @@ type SaveUser struct {
 }
 
 func (p *SaveUser) ToUser() (*entities.User, error) {
-	uuidV4 := uuid.New()
-
 	birth, err := parseTime(dateLayout, p.Birth)
 	if err != nil {
 		return nil, fmt.Errorf("error while parsing 'birth' field from %q: %w", p.Birth, err)
 	}
 
 	return &entities.User{
-		ID:       uuidV4.String(),
+		ID:       uuid.New().String(),
 		Name:     p.Name,
 		Birth:    toNullableTime(birth),
 		Email:    toNullableString(p.Email),
