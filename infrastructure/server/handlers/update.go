@@ -92,5 +92,5 @@ func (h *Handlers) Update(ctx *gin.Context) {
 	span.SetAttributes(attribute.String("http.body", string(data)))
 	span.SetAttributes(attribute.String("http.path.id", id))
 
-	ctx.JSON(http.StatusCreated, gin.H{"data": responses.FromUser(r.user)})
+	ctx.JSON(http.StatusOK, gin.H{"data": responses.FromUser(r.user)})
 }
