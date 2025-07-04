@@ -6,7 +6,6 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"strings"
 	"time"
 	"users/domain/entities"
 )
@@ -42,7 +41,7 @@ func (repo *Repository) GetByID(ctx context.Context, ids []string) ([]*entities.
 	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-GetByID")
 	defer span.End()
 
-	rows, err := repo.client.queries.GetUsers(tracerCtx, strings.Join(ids, ","))
+	rows, err := repo.client.queries.GetUsers(tracerCtx, ids)
 	if err != nil {
 		return nil, err
 	}

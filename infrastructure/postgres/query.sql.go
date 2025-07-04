@@ -86,11 +86,11 @@ func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 
 const getUsers = `-- name: GetUsers :many
 SELECT id, name, birth, email, location, created_at, updated_at, active FROM users
-WHERE id IN ($1)
+WHERE id = ANY($1::text[])
 `
 
-func (q *Queries) GetUsers(ctx context.Context, id string) ([]User, error) {
-	rows, err := q.db.Query(ctx, getUsers, id)
+func (q *Queries) GetUsers(ctx context.Context, dollar_1 []string) ([]User, error) {
+	rows, err := q.db.Query(ctx, getUsers, dollar_1)
 	if err != nil {
 		return nil, err
 	}

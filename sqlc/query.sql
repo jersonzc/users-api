@@ -4,7 +4,7 @@ WHERE id = $1 LIMIT 1;
 
 -- name: GetUsers :many
 SELECT * FROM users
-WHERE id IN ($1);
+WHERE id = ANY($1::text[]);
 
 -- name: ListUsers :many
 SELECT * FROM users
