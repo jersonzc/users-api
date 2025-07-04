@@ -63,9 +63,9 @@ func (repo *Repository) Save(ctx context.Context, user *entities.User) error {
 	defer span.End()
 
 	query, _, _ := goqu.Insert("users").
-		Cols("id", "name", "birth", "email", "location", "created_at", "updated_at", "active").
+		Cols("id", "name", "birth", "email", "location", "active").
 		Vals(
-			goqu.Vals{user.ID, user.Name, user.Birth, user.Email, user.Location, user.CreatedAt, user.UpdatedAt, user.Active},
+			goqu.Vals{user.ID, user.Name, user.Birth, user.Email, user.Location, user.Active},
 		).ToSQL()
 
 	return repo.execModify(tracerCtx, query)

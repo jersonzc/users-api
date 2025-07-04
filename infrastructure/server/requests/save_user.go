@@ -24,17 +24,13 @@ func (p *SaveUser) ToUser() (*entities.User, error) {
 		return nil, fmt.Errorf("error while parsing 'birth' field from %q: %w", p.Birth, err)
 	}
 
-	now := time.Now().UTC()
-
 	return &entities.User{
-		ID:        uuidV4.String(),
-		Name:      p.Name,
-		Birth:     toNullableTime(birth),
-		Email:     toNullableString(p.Email),
-		Location:  toNullableString(p.Location),
-		CreatedAt: now,
-		UpdatedAt: now,
-		Active:    true,
+		ID:       uuidV4.String(),
+		Name:     p.Name,
+		Birth:    toNullableTime(birth),
+		Email:    toNullableString(p.Email),
+		Location: toNullableString(p.Location),
+		Active:   true,
 	}, nil
 }
 

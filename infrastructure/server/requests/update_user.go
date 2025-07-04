@@ -49,7 +49,5 @@ func (p *UpdateUser) ToMap() (map[string]interface{}, error) {
 		fields["active"] = active
 	}
 
-	fields["updated_at"] = time.Now().UTC()
-
 	return fields, nil
 }
