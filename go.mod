@@ -3,7 +3,6 @@ module users
 go 1.23.9
 
 require (
-	github.com/doug-martin/goqu/v9 v9.19.0
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-migrate/migrate/v4 v4.18.3
 	github.com/google/uuid v1.6.0
