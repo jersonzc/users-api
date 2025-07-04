@@ -99,11 +99,26 @@ func toUserList(rows []User) []*entities.User {
 func toUser(row User) *entities.User {
 	var user entities.User
 
+	var birth *time.Time
+	if row.Birth.Valid {
+		birth = &row.Birth.Time
+	}
+
+	var email *string
+	if row.Email.Valid {
+		email = &row.Email.String
+	}
+
+	var location *string
+	if row.Location.Valid {
+		location = &row.Location.String
+	}
+
 	user.ID = row.ID
 	user.Name = row.Name
-	user.Birth = &row.Birth.Time
-	user.Email = &row.Email.String
-	user.Location = &row.Location.String
+	user.Birth = birth
+	user.Email = email
+	user.Location = location
 	user.CreatedAt = row.CreatedAt.Time
 	user.UpdatedAt = row.UpdatedAt.Time
 	user.Active = row.Active
@@ -158,18 +173,4 @@ func toUpdateUserParams(id string, fields map[string]interface{}) UpdateUserPara
 	row.UpdatedAt = pgtype.Timestamp{Time: fields["updated_at"].(time.Time), Valid: true}
 
 	return row
-}
-
-func fromNullableString(s *string) string {
-	if s != nil {
-		return *s
-	}
-	return ""
-}
-
-func fromNullableTime(t *time.Time) time.Time {
-	if t != nil {
-		return *t
-	}
-	return time.Time{}
 }
