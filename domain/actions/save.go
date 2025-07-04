@@ -35,9 +35,5 @@ func (action *Save) Execute(ctx context.Context, user *entities.User) (*entities
 		return nil, errors.AppUserExists
 	}
 
-	if err = action.save(tracerCtx, user); err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	return action.save(tracerCtx, user)
 }

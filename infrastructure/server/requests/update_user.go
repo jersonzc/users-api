@@ -22,15 +22,23 @@ func (p *UpdateUser) ToMap() (map[string]interface{}, error) {
 	}
 
 	if p.Birth != nil {
-		birth, err := time.Parse(dateLayout, *p.Birth)
-		if err != nil {
-			return nil, fmt.Errorf("error while parsing 'birth' field from %q: %w", *p.Birth, err)
+		if *p.Birth == "" {
+			fields["birth"] = nil
+		} else {
+			value, err := time.Parse(dateLayout, *p.Birth)
+			if err != nil {
+				return nil, fmt.Errorf("error while parsing 'birth' field from %q: %w", *p.Birth, err)
+			}
+			fields["birth"] = value
 		}
-		fields["birth"] = birth
 	}
 
 	if p.Email != nil {
-		fields["email"] = *p.Email
+		if *p.Email == "" {
+			fields["email"] = nil
+		} else {
+			fields["email"] = *p.Email
+		}
 	}
 
 	if p.Location != nil {

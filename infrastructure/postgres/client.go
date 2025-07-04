@@ -11,17 +11,15 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"log"
-	"time"
 )
 
 type Client struct {
-	postgres *pgxpool.Pool
-	dbName   string
-	uri      string
-	tracer   trace.Tracer
+	queries *Queries
+	dbName  string
+	uri     string
+	tracer  trace.Tracer
 }
 
 func NewClient(config *Config) (*Client, error) {
@@ -43,10 +41,10 @@ func NewClient(config *Config) (*Client, error) {
 	}
 
 	return &Client{
-		postgres: connPool,
-		dbName:   config.Database,
-		uri:      uri,
-		tracer:   otel.Tracer("PostgresClient"),
+		queries: New(connPool),
+		dbName:  config.Database,
+		uri:     uri,
+		tracer:  otel.Tracer("PostgresClient"),
 	}, nil
 }
 
@@ -83,66 +81,4 @@ func (c *Client) Migrate() error {
 	}
 
 	return nil
-}
-
-func (c *Client) Modify(ctx context.Context, query string) error {
-	tracerCtx, span := c.tracer.Start(ctx, "PostgresClient-Modify")
-	defer span.End()
-
-	span.SetAttributes(attribute.String("client.postgres.query", query))
-
-	_, err := c.postgres.Exec(tracerCtx, query)
-	if err != nil {
-		return fmt.Errorf("unable to modify table: %w", err)
-	}
-
-	return nil
-}
-
-func (c *Client) Retrieve(ctx context.Context, query string) ([]map[string]string, error) {
-	tracerCtx, span := c.tracer.Start(ctx, "PostgresClient-Retrieve")
-	defer span.End()
-
-	span.SetAttributes(attribute.String("client.postgres.query", query))
-
-	result, err := c.postgres.Query(tracerCtx, query)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute query: %w", err)
-	}
-
-	defer result.Close()
-
-	var response []map[string]string
-
-	columns := result.FieldDescriptions()
-	for result.Next() {
-		if result.Err() != nil {
-			return nil, fmt.Errorf("postgres: unexpected row scan: %w", result.Err())
-		}
-
-		row := make(map[string]string, len(columns))
-		values, valuesErr := result.Values()
-		if valuesErr != nil {
-			return nil, fmt.Errorf("postgres: failed to read row: %w", valuesErr)
-		}
-
-		for i, v := range values {
-			var value string
-
-			if v != nil {
-				switch t := v.(type) {
-				case time.Time:
-					value = t.Format(time.DateTime)
-				default:
-					value = fmt.Sprintf("%v", t)
-				}
-
-				row[columns[i].Name] = value
-			}
-		}
-
-		response = append(response, row)
-	}
-
-	return response, nil
 }
