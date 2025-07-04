@@ -146,16 +146,6 @@ func toSaveUserParams(user *entities.User) (CreateUserParams, error) {
 		birth.Valid = false
 	}
 
-	var createdAt pgtype.Timestamp
-	if err := createdAt.Scan(user.CreatedAt); err != nil {
-		return CreateUserParams{}, err
-	}
-
-	var updatedAt pgtype.Timestamp
-	if err := updatedAt.Scan(user.UpdatedAt); err != nil {
-		return CreateUserParams{}, err
-	}
-
 	var email pgtype.Text
 	if user.Email != nil {
 		email.String = *user.Email
@@ -172,14 +162,12 @@ func toSaveUserParams(user *entities.User) (CreateUserParams, error) {
 		location.Valid = false
 	}
 	return CreateUserParams{
-		ID:        user.ID,
-		Name:      user.Name,
-		Birth:     birth,
-		Email:     email,
-		Location:  location,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
-		Active:    user.Active,
+		ID:       user.ID,
+		Name:     user.Name,
+		Birth:    birth,
+		Email:    email,
+		Location: location,
+		Active:   user.Active,
 	}, nil
 }
 
@@ -188,11 +176,6 @@ func toUpdateUserParams(id string, fields map[string]interface{}) (UpdateUserPar
 
 	// ID
 	row.ID = id
-
-	// UpdatedAt
-	if err := row.UpdatedAt.Scan(fields["updated_at"]); err != nil {
-		return UpdateUserParams{}, err
-	}
 
 	// Name
 	if value, ok := fields["name"]; ok {

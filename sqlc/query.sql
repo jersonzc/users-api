@@ -17,9 +17,9 @@ ORDER BY name;
 
 -- name: CreateUser :one
 INSERT INTO users (
-  id, name, birth, email, location, created_at, updated_at, active
+  id, name, birth, email, location, active
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8
+  $1, $2, $3, $4, $5, $6
 )
 RETURNING *;
 
@@ -39,9 +39,7 @@ SET
   THEN @location ELSE location END,
 
   active = CASE WHEN @active_do_update::boolean
-  THEN @active ELSE active END,
-
-  updated_at = $2
+  THEN @active ELSE active END
 WHERE id = $1
 RETURNING *;
 

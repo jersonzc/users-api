@@ -13,22 +13,20 @@ import (
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-  id, name, birth, email, location, created_at, updated_at, active
+  id, name, birth, email, location, active
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8
+  $1, $2, $3, $4, $5, $6
 )
 RETURNING id, name, birth, email, location, created_at, updated_at, active
 `
 
 type CreateUserParams struct {
-	ID        string
-	Name      string
-	Birth     pgtype.Date
-	Email     pgtype.Text
-	Location  pgtype.Text
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
-	Active    bool
+	ID       string
+	Name     string
+	Birth    pgtype.Date
+	Email    pgtype.Text
+	Location pgtype.Text
+	Active   bool
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -38,8 +36,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.Birth,
 		arg.Email,
 		arg.Location,
-		arg.CreatedAt,
-		arg.UpdatedAt,
 		arg.Active,
 	)
 	var i User
@@ -194,29 +190,26 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 const updateUser = `-- name: UpdateUser :exec
 UPDATE users
 SET
-  name = CASE WHEN $3::boolean
-  THEN $4 ELSE name END,
+  name = CASE WHEN $2::boolean
+  THEN $3 ELSE name END,
 
-  birth = CASE WHEN $5::boolean
-  THEN $6 ELSE birth END,
+  birth = CASE WHEN $4::boolean
+  THEN $5 ELSE birth END,
 
-  email = CASE WHEN $7::boolean
-  THEN $8 ELSE email END,
+  email = CASE WHEN $6::boolean
+  THEN $7 ELSE email END,
 
-  location = CASE WHEN $9::boolean
-  THEN $10 ELSE location END,
+  location = CASE WHEN $8::boolean
+  THEN $9 ELSE location END,
 
-  active = CASE WHEN $11::boolean
-  THEN $12 ELSE active END,
-
-  updated_at = $2
+  active = CASE WHEN $10::boolean
+  THEN $11 ELSE active END
 WHERE id = $1
 RETURNING id, name, birth, email, location, created_at, updated_at, active
 `
 
 type UpdateUserParams struct {
 	ID               string
-	UpdatedAt        pgtype.Timestamp
 	NameDoUpdate     bool
 	Name             string
 	BirthDoUpdate    bool
@@ -232,7 +225,6 @@ type UpdateUserParams struct {
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 	_, err := q.db.Exec(ctx, updateUser,
 		arg.ID,
-		arg.UpdatedAt,
 		arg.NameDoUpdate,
 		arg.Name,
 		arg.BirthDoUpdate,
