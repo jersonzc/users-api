@@ -44,7 +44,7 @@ func TestGetSingle(t *testing.T) {
 			name:         "on OK execution",
 			getByID:      NewGetByIDMock([]*entities.User{{ID: "1"}}, nil),
 			expectedCode: http.StatusOK,
-			expectedBody: "{\"data\":[{\"id\":\"1\",\"name\":\"\",\"birth\":\"\",\"email\":\"\",\"location\":null,\"created_at\":\"0001-01-01 00:00:00 +0000 UTC\",\"updated_at\":\"0001-01-01 00:00:00 +0000 UTC\",\"active\":false}]}",
+			expectedBody: "{\"data\":[{\"id\":\"1\",\"name\":\"\",\"birth\":\"\",\"email\":\"\",\"location\":null,\"created_at\":\"0001-01-01 00:00:00\",\"updated_at\":\"0001-01-01 00:00:00\",\"active\":false}]}",
 		},
 		{
 			name:         "on repository error",
