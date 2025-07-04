@@ -55,7 +55,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users
 WHERE id = $1
-RETURNING id, name, birth, email, location, created_at, updated_at, active
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, id string) error {
@@ -187,7 +186,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
-const updateUser = `-- name: UpdateUser :exec
+const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET
   name = CASE WHEN $2::boolean
@@ -222,8 +221,8 @@ type UpdateUserParams struct {
 	Active           bool
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
-	_, err := q.db.Exec(ctx, updateUser,
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUser,
 		arg.ID,
 		arg.NameDoUpdate,
 		arg.Name,
@@ -236,5 +235,16 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 		arg.ActiveDoUpdate,
 		arg.Active,
 	)
-	return err
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Birth,
+		&i.Email,
+		&i.Location,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Active,
+	)
+	return i, err
 }

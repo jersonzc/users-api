@@ -23,7 +23,7 @@ INSERT INTO users (
 )
 RETURNING *;
 
--- name: UpdateUser :exec
+-- name: UpdateUser :one
 UPDATE users
 SET
   name = CASE WHEN @name_do_update::boolean
@@ -45,5 +45,4 @@ RETURNING *;
 
 -- name: DeleteUser :exec
 DELETE FROM users
-WHERE id = $1
-RETURNING *;
+WHERE id = $1;

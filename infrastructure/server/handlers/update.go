@@ -8,7 +8,9 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"io"
 	"net/http"
+	"users/domain/entities"
 	"users/infrastructure/server/requests"
+	"users/infrastructure/server/responses"
 )
 
 // Update godoc
@@ -64,15 +66,24 @@ func (h *Handlers) Update(ctx *gin.Context) {
 		return
 	}
 
-	errChan := make(chan error, 1)
+	type result struct {
+		user *entities.User
+		err  error
+	}
+
+	resultChan := make(chan result, 1)
 	go func(id string, fields map[string]interface{}) {
-		errChan <- h.actions.Update(tracerCtx, id, fields)
+		var r result
+		r.user, r.err = h.actions.Update(tracerCtx, id, fields)
+		resultChan <- r
 	}(id, fields)
 
-	if err = <-errChan; err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
-		ctx.JSON(http.StatusInternalServerError, gin.H{"errors": err.Error()})
+	r := <-resultChan
+
+	if r.err != nil {
+		span.RecordError(r.err)
+		span.SetStatus(codes.Error, r.err.Error())
+		ctx.JSON(http.StatusInternalServerError, gin.H{"errors": r.err.Error()})
 		return
 	}
 
@@ -81,5 +92,5 @@ func (h *Handlers) Update(ctx *gin.Context) {
 	span.SetAttributes(attribute.String("http.body", string(data)))
 	span.SetAttributes(attribute.String("http.path.id", id))
 
-	ctx.JSON(http.StatusNoContent, gin.H{})
+	ctx.JSON(http.StatusCreated, gin.H{"data": responses.FromUser(r.user)})
 }

@@ -51,50 +51,45 @@ func (repo *Repository) GetByID(ctx context.Context, ids []string) ([]*entities.
 	return toUserList(rows), nil
 }
 
-func (repo *Repository) Save(ctx context.Context, user *entities.User) error {
+func (repo *Repository) Save(ctx context.Context, user *entities.User) (*entities.User, error) {
 	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-Save")
 	defer span.End()
 
 	arg, err := toSaveUserParams(user)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = repo.client.queries.CreateUser(tracerCtx, arg)
+	row, err := repo.client.queries.CreateUser(tracerCtx, arg)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return toUser(row), nil
 }
 
-func (repo *Repository) Update(ctx context.Context, id string, fields map[string]interface{}) error {
+func (repo *Repository) Update(ctx context.Context, id string, fields map[string]interface{}) (*entities.User, error) {
 	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-Update")
 	defer span.End()
 
 	arg, err := toUpdateUserParams(id, fields)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = repo.client.queries.UpdateUser(tracerCtx, arg)
+	row, err := repo.client.queries.UpdateUser(tracerCtx, arg)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return toUser(row), nil
 }
 
 func (repo *Repository) Remove(ctx context.Context, id string) error {
 	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-Remove")
 	defer span.End()
 
-	err := repo.client.queries.DeleteUser(tracerCtx, id)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.client.queries.DeleteUser(tracerCtx, id)
 }
 
 func toUserList(rows []User) []*entities.User {
