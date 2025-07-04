@@ -1,6 +1,14 @@
 all: test
 
-.PHONY: all test
+.PHONY: all generate-openapi test lint
+
+generate-openapi: generate-swagger rename-swagger
+
+generate-swagger:
+	swag init --outputTypes json
+
+rename-swagger:
+	mv ./docs/swagger.json ./docs/users-openapi.json
 
 test:
 	go test ./... -coverprofile=coverage.out -coverpkg=./...

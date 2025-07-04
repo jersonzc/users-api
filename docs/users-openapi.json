@@ -1,0 +1,304 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Interact with user accounts.",
+        "title": "Users API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "paths": {
+        "/users": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List active users",
+                "operationId": "Get",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.UserResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a user",
+                "operationId": "Save",
+                "parameters": [
+                    {
+                        "description": "Create a user: 'name' field is required; all other fields are optional.",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SaveUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/users/search": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List multiple users",
+                "operationId": "GetMultiple",
+                "parameters": [
+                    {
+                        "description": "Enter the IDs of the users to list.",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.MultipleIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.UserResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/users/search/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List a single user",
+                "operationId": "GetSingle",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Modify a user",
+                "operationId": "Update",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the user.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "The info to update.",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "error",
+                        "schema": {}
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a user.",
+                "operationId": "Remove",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "error",
+                        "schema": {}
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "requests.MultipleIDRequest": {
+            "type": "object",
+            "properties": {
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "requests.SaveUser": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "birth": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.UpdateUser": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "string"
+                },
+                "birth": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.UserResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "birth": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
