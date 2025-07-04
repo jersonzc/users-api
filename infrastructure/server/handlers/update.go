@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -49,6 +50,14 @@ func (h *Handlers) Update(ctx *gin.Context) {
 
 	fields, err := body.ToMap()
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"errors": err.Error()})
+		return
+	}
+
+	if len(fields) == 0 {
+		err = errors.New("at least one field is required")
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		ctx.JSON(http.StatusBadRequest, gin.H{"errors": err.Error()})
