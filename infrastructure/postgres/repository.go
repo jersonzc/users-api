@@ -56,7 +56,12 @@ func (repo *Repository) Save(ctx context.Context, user *entities.User) error {
 	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-Save")
 	defer span.End()
 
-	_, err := repo.client.queries.CreateUser(tracerCtx, toSaveUserParams(user))
+	arg, err := toSaveUserParams(user)
+	if err != nil {
+		return err
+	}
+
+	_, err = repo.client.queries.CreateUser(tracerCtx, arg)
 	if err != nil {
 		return err
 	}
@@ -68,7 +73,12 @@ func (repo *Repository) Update(ctx context.Context, id string, fields map[string
 	tracerCtx, span := repo.tracer.Start(ctx, "PostgresRepository-Update")
 	defer span.End()
 
-	err := repo.client.queries.UpdateUser(tracerCtx, toUpdateUserParams(id, fields))
+	arg, err := toUpdateUserParams(id, fields)
+	if err != nil {
+		return err
+	}
+
+	err = repo.client.queries.UpdateUser(tracerCtx, arg)
 	if err != nil {
 		return err
 	}
@@ -126,51 +136,109 @@ func toUser(row User) *entities.User {
 	return &user
 }
 
-func toSaveUserParams(user *entities.User) CreateUserParams {
-	var row CreateUserParams
+func toSaveUserParams(user *entities.User) (CreateUserParams, error) {
+	var birth pgtype.Date
+	if user.Birth != nil {
+		if err := birth.Scan(*user.Birth); err != nil {
+			return CreateUserParams{}, err
+		}
+	} else {
+		birth.Valid = false
+	}
 
-	row.ID = user.ID
-	row.Name = user.Name
-	row.Birth = pgtype.Date{Time: fromNullableTime(user.Birth), Valid: true}
-	row.Email = pgtype.Text{String: fromNullableString(user.Email), Valid: true}
-	row.Location = pgtype.Text{String: fromNullableString(user.Location), Valid: true}
-	row.CreatedAt = pgtype.Timestamp{Time: user.CreatedAt, Valid: true}
-	row.UpdatedAt = pgtype.Timestamp{Time: user.UpdatedAt, Valid: true}
-	row.Active = user.Active
+	var createdAt pgtype.Timestamp
+	if err := createdAt.Scan(user.CreatedAt); err != nil {
+		return CreateUserParams{}, err
+	}
 
-	return row
+	var updatedAt pgtype.Timestamp
+	if err := updatedAt.Scan(user.UpdatedAt); err != nil {
+		return CreateUserParams{}, err
+	}
+
+	var email pgtype.Text
+	if user.Email != nil {
+		email.String = *user.Email
+		email.Valid = true
+	} else {
+		email.Valid = false
+	}
+
+	var location pgtype.Text
+	if user.Location != nil {
+		location.String = *user.Location
+		location.Valid = true
+	} else {
+		location.Valid = false
+	}
+	return CreateUserParams{
+		ID:        user.ID,
+		Name:      user.Name,
+		Birth:     birth,
+		Email:     email,
+		Location:  location,
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
+		Active:    user.Active,
+	}, nil
 }
 
-func toUpdateUserParams(id string, fields map[string]interface{}) UpdateUserParams {
+func toUpdateUserParams(id string, fields map[string]interface{}) (UpdateUserParams, error) {
 	var row UpdateUserParams
 
+	// ID
+	row.ID = id
+
+	// UpdatedAt
+	if err := row.UpdatedAt.Scan(fields["updated_at"]); err != nil {
+		return UpdateUserParams{}, err
+	}
+
+	// Name
 	if value, ok := fields["name"]; ok {
 		row.NameDoUpdate = true
 		row.Name = value.(string)
 	}
 
+	// Birth
 	if value, ok := fields["birth"]; ok {
 		row.BirthDoUpdate = true
-		row.Birth = value.(pgtype.Date)
+		if value != nil {
+			if err := row.Birth.Scan(value); err != nil {
+				return UpdateUserParams{}, err
+			}
+		} else {
+			row.Birth.Valid = false
+		}
 	}
 
+	// Email
 	if value, ok := fields["email"]; ok {
 		row.EmailDoUpdate = true
-		row.Email = value.(string)
+		if value != nil {
+			row.Email.String = value.(string)
+			row.Email.Valid = true
+		} else {
+			row.Email.Valid = false
+		}
 	}
 
+	// Location
 	if value, ok := fields["location"]; ok {
 		row.LocationDoUpdate = true
-		row.Location = value.(string)
+		if value != nil {
+			row.Location.String = value.(string)
+			row.Location.Valid = true
+		} else {
+			row.Location.Valid = false
+		}
 	}
 
+	// Active
 	if value, ok := fields["active"]; ok {
 		row.ActiveDoUpdate = true
 		row.Active = value.(bool)
 	}
 
-	row.ID = id
-	row.UpdatedAt = pgtype.Timestamp{Time: fields["updated_at"].(time.Time), Valid: true}
-
-	return row
+	return row, nil
 }

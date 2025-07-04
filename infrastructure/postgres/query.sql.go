@@ -195,19 +195,19 @@ const updateUser = `-- name: UpdateUser :exec
 UPDATE users
 SET
   name = CASE WHEN $3::boolean
-  THEN $4::text ELSE name END,
+  THEN $4 ELSE name END,
 
   birth = CASE WHEN $5::boolean
-  THEN $6::date ELSE birth END,
+  THEN $6 ELSE birth END,
 
   email = CASE WHEN $7::boolean
-  THEN $8::text ELSE email END,
+  THEN $8 ELSE email END,
 
   location = CASE WHEN $9::boolean
-  THEN $10::text ELSE location END,
+  THEN $10 ELSE location END,
 
   active = CASE WHEN $11::boolean
-  THEN $12::boolean ELSE active END,
+  THEN $12 ELSE active END,
 
   updated_at = $2
 WHERE id = $1
@@ -222,9 +222,9 @@ type UpdateUserParams struct {
 	BirthDoUpdate    bool
 	Birth            pgtype.Date
 	EmailDoUpdate    bool
-	Email            string
+	Email            pgtype.Text
 	LocationDoUpdate bool
-	Location         string
+	Location         pgtype.Text
 	ActiveDoUpdate   bool
 	Active           bool
 }

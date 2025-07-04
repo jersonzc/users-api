@@ -27,19 +27,19 @@ RETURNING *;
 UPDATE users
 SET
   name = CASE WHEN @name_do_update::boolean
-  THEN @name::text ELSE name END,
+  THEN @name ELSE name END,
 
   birth = CASE WHEN @birth_do_update::boolean
-  THEN @birth::date ELSE birth END,
+  THEN @birth ELSE birth END,
 
   email = CASE WHEN @email_do_update::boolean
-  THEN @email::text ELSE email END,
+  THEN @email ELSE email END,
 
   location = CASE WHEN @location_do_update::boolean
-  THEN @location::text ELSE location END,
+  THEN @location ELSE location END,
 
   active = CASE WHEN @active_do_update::boolean
-  THEN @active::boolean ELSE active END,
+  THEN @active ELSE active END,
 
   updated_at = $2
 WHERE id = $1
