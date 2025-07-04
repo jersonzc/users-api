@@ -25,8 +25,8 @@ func FromUser(user *entities.User) *UserResponse {
 		Birth:     fromNullableTime(user.Birth),
 		Email:     fromNullableString(user.Email),
 		Location:  user.Location,
-		CreatedAt: user.CreatedAt.String(),
-		UpdatedAt: user.UpdatedAt.String(),
+		CreatedAt: user.CreatedAt.Format(time.DateTime),
+		UpdatedAt: user.UpdatedAt.Format(time.DateTime),
 		Active:    user.Active,
 	}
 }
