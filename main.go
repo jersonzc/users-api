@@ -87,5 +87,7 @@ func main() {
 	}
 
 	// When Shutdown is called, ListenAndServe immediately returns ErrServerClosed.
-	err = app.Shutdown(context.Background())
+	if err = app.Shutdown(context.Background()); err != nil {
+		errorLog.Printf("Error while shutting down application: %s", err.Error())
+	}
 }
