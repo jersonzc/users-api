@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"log"
 	"os"
 	"os/signal"
@@ -28,10 +27,11 @@ func main() {
 	// Set up OpenTelemetry.
 	otelShutdown, err := setupOTelSDK(ctx)
 	if err != nil {
+		errorLog.Printf("Failed to setup OTel SDK: %s", err.Error())
 		return
 	}
 	defer func() {
-		err = errors.Join(err, otelShutdown(context.Background()))
+		err = otelShutdown(context.Background())
 		if err != nil {
 			errorLog.Printf("Error while shutting down otel sdk: %s", err.Error())
 		}
