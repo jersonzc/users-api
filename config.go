@@ -31,6 +31,7 @@ func NewConfig() (*Config, error) {
 		get("DB_NAME", "users"),
 		get("DB_USER", "postgres"),
 		get("DB_PASSWORD", "postgres"),
+		getDuration("DB_TIMEOUT", 5, time.Second),
 	)
 	if err != nil {
 		return nil, err

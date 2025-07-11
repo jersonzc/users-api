@@ -29,12 +29,15 @@ func NewClient(config *Config) (*Client, error) {
 		return nil, fmt.Errorf("failed to parse db config: %w", err)
 	}
 
-	connPool, err := pgxpool.NewWithConfig(context.Background(), connConfig)
+	ctx, cancel := context.WithTimeout(context.Background(), config.Timeout)
+	defer cancel()
+
+	connPool, err := pgxpool.NewWithConfig(ctx, connConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to db: %w", err)
 	}
 
-	err = connPool.Ping(context.Background())
+	err = connPool.Ping(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to ping db: %w", err)
 	}

@@ -1,6 +1,9 @@
 package postgres
 
-import "users/domain/errors"
+import (
+	"time"
+	"users/domain/errors"
+)
 
 type Config struct {
 	Host     string
@@ -8,6 +11,7 @@ type Config struct {
 	Database string
 	Username string
 	Password string
+	Timeout  time.Duration
 }
 
 func NewConfig(
@@ -16,6 +20,7 @@ func NewConfig(
 	database string,
 	username string,
 	password string,
+	timeout time.Duration,
 ) (*Config, error) {
 	if host == "" {
 		return nil, errors.PostgresMissingHost
@@ -43,5 +48,6 @@ func NewConfig(
 		Database: database,
 		Username: username,
 		Password: password,
+		Timeout:  timeout,
 	}, nil
 }
