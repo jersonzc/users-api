@@ -16,7 +16,10 @@ import (
 // @version         1.0
 // @description     Interact with user accounts.
 func main() {
-	log.Println("Starting service")
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+	infoLog.Println("Starting service")
 
 	// Handle SIGINT (CTRL+C) gracefully.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -30,14 +33,14 @@ func main() {
 	defer func() {
 		err = errors.Join(err, otelShutdown(context.Background()))
 		if err != nil {
-			log.Printf("Error while shutting down otel sdk: %s", err.Error())
+			errorLog.Printf("Error while shutting down otel sdk: %s", err.Error())
 		}
 	}()
 
 	// Config resources.
 	config, err := NewConfig()
 	if err != nil {
-		log.Printf("Configuration error: %s", err.Error())
+		errorLog.Printf("Configuration error: %s", err.Error())
 		return
 	}
 
@@ -47,21 +50,21 @@ func main() {
 	// Postgres client.
 	postgresClient, err := postgres.NewClient(config.DB)
 	if err != nil {
-		log.Printf("Database error: %s", err.Error())
+		errorLog.Printf("Database error: %s", err.Error())
 		return
 	}
 
 	// Run migrations
 	err = postgresClient.Migrate()
 	if err != nil {
-		log.Printf("Database migration error: %s", err.Error())
+		errorLog.Printf("Database migration error: %s", err.Error())
 		return
 	}
 
 	// Link actions
 	actions, err := dependencies.NewActions(postgresClient)
 	if err != nil {
-		log.Printf("Actions error: %s", err.Error())
+		errorLog.Printf("Actions error: %s", err.Error())
 	}
 
 	// Start HTTP server.
