@@ -12,7 +12,6 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
-	"log"
 )
 
 type Client struct {
@@ -54,8 +53,9 @@ func (c *Client) Migrate() error {
 		return fmt.Errorf("failed to connect to db: %w", err)
 	}
 	defer func() {
-		if err = db.Close(); err != nil {
-			log.Printf("failed to close db connection: %v", err)
+		if closeErr := db.Close(); closeErr != nil {
+			closeErr = fmt.Errorf("failed to close db connection: %w", closeErr)
+			err = errors.Join(err, closeErr)
 		}
 	}()
 
