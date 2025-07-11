@@ -66,6 +66,7 @@ func main() {
 	actions, err := dependencies.NewActions(postgresClient)
 	if err != nil {
 		errorLog.Printf("Actions error: %s", err.Error())
+		return
 	}
 
 	// Start HTTP server.
