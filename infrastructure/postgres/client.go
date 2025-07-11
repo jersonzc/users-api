@@ -53,10 +53,7 @@ func (c *Client) Migrate() error {
 		return fmt.Errorf("failed to connect to db: %w", err)
 	}
 	defer func() {
-		if closeErr := db.Close(); closeErr != nil {
-			closeErr = fmt.Errorf("failed to close db connection: %w", closeErr)
-			err = errors.Join(err, closeErr)
-		}
+		err = errors.Join(err, db.Close())
 	}()
 
 	err = db.Ping()
