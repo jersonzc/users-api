@@ -53,6 +53,7 @@ func main() {
 		errorLog.Printf("Database error: %s", err.Error())
 		return
 	}
+	defer postgresClient.Close()
 
 	// Run migrations
 	err = postgresClient.Migrate()

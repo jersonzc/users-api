@@ -15,6 +15,7 @@ import (
 )
 
 type Client struct {
+	pool    *pgxpool.Pool
 	queries *Queries
 	dbName  string
 	uri     string
@@ -43,11 +44,16 @@ func NewClient(config *Config) (*Client, error) {
 	}
 
 	return &Client{
+		pool:    connPool,
 		queries: New(connPool),
 		dbName:  config.Database,
 		uri:     uri,
 		tracer:  otel.Tracer("PostgresClient"),
 	}, nil
+}
+
+func (c *Client) Close() {
+	c.pool.Close()
 }
 
 func (c *Client) Migrate() error {
