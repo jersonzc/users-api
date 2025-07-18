@@ -18,7 +18,8 @@ func NewConfig() (*Config, error) {
 	serverConfig, err := server.NewConfig(
 		getInt("API_PORT", 8080),
 		get("PREFIX", "/app"),
-		getDuration("SERVER_READ_TIMEOUT", 10, time.Second),
+		getDuration("SERVER_IDLE_TIMEOUT", 1, time.Second),
+		getDuration("SERVER_READ_TIMEOUT", 5, time.Second),
 		getDuration("SERVER_WRITE_TIMEOUT", 10, time.Second),
 	)
 	if err != nil {

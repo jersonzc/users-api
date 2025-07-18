@@ -25,6 +25,7 @@ func Setup(config *Config, actions *dependencies.Actions) *http.Server {
 	return &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.Port),
 		Handler:      ginServer,
+		IdleTimeout:  config.IdleTimeout,
 		ReadTimeout:  config.ReadTimeout,
 		WriteTimeout: config.WriteTimeout,
 	}

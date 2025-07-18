@@ -8,6 +8,7 @@ import (
 )
 
 func TestNewConfig(t *testing.T) {
+	idleTimeout := time.Duration(1)
 	readTimeout := time.Duration(1)
 	writeTimeout := time.Duration(1)
 
@@ -15,7 +16,7 @@ func TestNewConfig(t *testing.T) {
 		port := 65536
 		prefix := "/api"
 
-		_, err := NewConfig(port, prefix, readTimeout, writeTimeout)
+		_, err := NewConfig(port, prefix, idleTimeout, readTimeout, writeTimeout)
 
 		assertError(t, err, errorspkg.ServerInvalidPort)
 	})
@@ -24,7 +25,7 @@ func TestNewConfig(t *testing.T) {
 		port := 3001
 		prefix := ""
 
-		_, err := NewConfig(port, prefix, readTimeout, writeTimeout)
+		_, err := NewConfig(port, prefix, idleTimeout, readTimeout, writeTimeout)
 
 		assertError(t, err, errorspkg.ServerMissingPrefix)
 	})
@@ -33,7 +34,7 @@ func TestNewConfig(t *testing.T) {
 		port := 3001
 		prefix := "/api"
 
-		_, err := NewConfig(port, prefix, readTimeout, writeTimeout)
+		_, err := NewConfig(port, prefix, idleTimeout, readTimeout, writeTimeout)
 
 		assertNoError(t, err)
 	})

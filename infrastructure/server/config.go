@@ -8,6 +8,7 @@ import (
 type Config struct {
 	Port         int
 	Prefix       string
+	IdleTimeout  time.Duration
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
 }
@@ -15,6 +16,7 @@ type Config struct {
 func NewConfig(
 	port int,
 	prefix string,
+	idleTimeout time.Duration,
 	readTimeout time.Duration,
 	writeTimeout time.Duration,
 ) (*Config, error) {
@@ -29,6 +31,7 @@ func NewConfig(
 	return &Config{
 		Port:         port,
 		Prefix:       prefix,
+		IdleTimeout:  idleTimeout,
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
 	}, nil
